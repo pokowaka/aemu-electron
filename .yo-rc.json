@@ -1,0 +1,8 @@
+{
+  "generator-electron": {
+    "promptValues": {
+      "githubUsername": "pokowaka@gmail.com",
+      "website": "https://github.com/pokowaka/aemu-electron"
+    }
+  }
+}
