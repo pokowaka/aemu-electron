@@ -50,6 +50,7 @@ build
 # Generated API definitions
 electron-api.json
 electron.d.ts
+docs
 
 # Spec hash calculation
 spec/.hash

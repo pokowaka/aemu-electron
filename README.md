@@ -1,7 +1,6 @@
 # aemu electron
 
-> My hunky-dory app
-
+This is a sample electrong application that connects a running emulator.
 
 ## Install
 
