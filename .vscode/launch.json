@@ -26,7 +26,7 @@
 			"timeout": 30000,
 			"sourceMaps": true,
 			"outFiles": ["${workspaceFolder}/build/**/*.js"],
-			"preLaunchTask": "npm: compile"
+
 		}
 	],
 	"compounds": [
@@ -35,7 +35,8 @@
 			"configurations": [
 				"Electron: Main",
 				"Electron: Renderer"
-			]
+			],
+			"preLaunchTask": "npm: compile"
 		}
 	]
 }

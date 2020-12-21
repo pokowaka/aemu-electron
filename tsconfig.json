@@ -9,6 +9,12 @@
 		"allowJs": true,
 		"rootDir": "src",
 		"sourceMap": true,
-		"strict": true /* enable all strict type-checking options */
-	}
+
+		"strict": true /* enab
+		le all strict type-checking options */
+	},
+	"exclude": [
+		"docs",
+		"build"
+	]
 }

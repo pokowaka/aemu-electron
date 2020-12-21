@@ -33,11 +33,11 @@ class EmulatorView {
 
 		if (!pid.done) {
 			this.emulator = this.discovery.getEmulator(pid.value);
-			this.emulator.on(EmulatorEvent.frame, this.frameReceiver);
+			this.emulator.on(EmulatorEvent.frame, this.frameReceiver.bind(this));
 		} else {
 			this.discovery.on("add", pid => {
 				this.emulator = this.discovery.getEmulator(pid);
-				this.emulator.on(EmulatorEvent.frame, this.frameReceiver);
+				this.emulator.on(EmulatorEvent.frame, this.frameReceiver.bind(this));
 			});
 		}
 

@@ -291,29 +291,36 @@ export class Emulator {
 		fmt.setTransport(transport);
 
 		this.stream = this.client!.streamScreenshot(fmt, this.metadata!);
-		this.stream.on("data", (img: Image) => {
-			// Make sure we properly translate mouse clicks.
-			console.log("Frame: ", img.getSeq());
-			const format = img.getFormat()!;
-			this.width = format.getWidth();
-			this.height = format.getHeight();
-			this.emitter.emit("frame", img);
-		});
+		this.stream.on("data", this.handleFrame.bind(this));
+		this.stream.on("error", this.handleError(this, tmpfile));
+	}
 
-		this.stream.on("error", (err: any) => {
+	// Handle incoming frame.
+	private handleFrame(img: Image) {
+		// Track width and height for proper mouse click handling
+		console.log("Frame: ", img.getSeq());
+		const format = img.getFormat()!;
+		this.width = format.getWidth();
+		this.height = format.getHeight();
+		this.emitter.emit("frame", img);
+	}
+
+	// Handle errors from stream screenshot.
+	private handleError(self: this, tmpfile: string): (err: Error) => void {
+		return (err: any) => {
 			// We cancel the stream on resize, so lets restart it!
 			console.log("Error from screenshot: " + err.message);
 			switch (err.code) {
 				case 1:
 					// Cancelled, likely due to a resize.
-					if (this.wantsResize) {
-						this.wantsResize = false;
-						this.streamScreenshot();
+					if (self.wantsResize) {
+						self.wantsResize = false;
+						self.streamScreenshot();
 					}
 					break;
 				case 13:
 					// Gone for good!
-					this.close();
+					self.close();
 					break;
 				default:
 					console.log("Error from screenshot: " + JSON.stringify(err));
@@ -321,7 +328,7 @@ export class Emulator {
 
 			// Remove our transport file.
 			fs.unlinkSync(tmpfile);
-		});
+		};
 	}
 
 	// Retrieves the device status, we use this to get the device width & height.
