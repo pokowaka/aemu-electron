@@ -183,17 +183,17 @@ export class Emulator {
 			eventType === EmulatorKeyEvent.keydown
 				? KeyboardEvent.KeyEventType.KEYDOWN
 				: eventType === EmulatorKeyEvent.keyup
-				? KeyboardEvent.KeyEventType.KEYUP
-				: KeyboardEvent.KeyEventType.KEYPRESS
+					? KeyboardEvent.KeyEventType.KEYUP
+					: KeyboardEvent.KeyEventType.KEYPRESS
 		);
 		request.setKey(key);
 		this.client!.sendKey(request, this.metadata!, err => {
 			if (err) {
 				console.log(
 					"Failed to deliver " +
-						request.toString() +
-						", err: " +
-						JSON.stringify(err)
+					request.toString() +
+					", err: " +
+					JSON.stringify(err)
 				);
 			}
 		});
@@ -235,9 +235,9 @@ export class Emulator {
 			if (err) {
 				console.log(
 					"Failed to deliver " +
-						request.toString() +
-						", err: " +
-						JSON.stringify(err)
+					request.toString() +
+					", err: " +
+					JSON.stringify(err)
 				);
 			}
 		});
@@ -245,6 +245,9 @@ export class Emulator {
 
 	/** Resizes the requested image stream. You should call this if your rendering surfaces changes in size. */
 	resize(width: number, height: number) {
+		if (this.width === width && this.height === height)
+			return;
+
 		this.width = width;
 		this.height = height;
 		this.wantsResize = true;
@@ -277,6 +280,7 @@ export class Emulator {
 			`emu-${this.width}x${this.height}.rgb888`
 		);
 
+		console.log("streaming frames to", tmpfile);
 		fs.openSync(tmpfile, "w");
 		fs.truncateSync(tmpfile, this.height * this.width * 3);
 
@@ -298,7 +302,6 @@ export class Emulator {
 	// Handle incoming frame.
 	private handleFrame(img: Image) {
 		// Track width and height for proper mouse click handling
-		console.log("Frame: ", img.getSeq());
 		const format = img.getFormat()!;
 		this.width = format.getWidth();
 		this.height = format.getHeight();
@@ -327,7 +330,7 @@ export class Emulator {
 			}
 
 			// Remove our transport file.
-			fs.unlinkSync(tmpfile);
+			fs.unlink(tmpfile, (function (err) { if (err) console.log("Did not delete mmap file:" + tmpfile, err); }));
 		};
 	}
 

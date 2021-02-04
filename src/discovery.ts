@@ -116,12 +116,15 @@ export class EmulatorDiscovery {
       return path.join(process.env.ANDROID_SDK_HOME, ANDROID_SUBDIR);
     }
 
+    if (process.platform === "win32") {
+      return path.join(process.env.HOMEDRIVE!, process.env.HOMEPATH!, ANDROID_SUBDIR);
+    }
     return path.join(process.env.HOME!, ANDROID_SUBDIR);
   }
 
   private getDiscoveryDir() {
     let dir = "";
-    if (process.platform === "win32" && process.env.LOCALAPPADATA) {
+    if (process.platform === "win32" && process.env.LOCALAPPDATA) {
       dir = path.join(process.env.LOCALAPPDATA!, "Temp");
     }
     if (process.platform === "linux") {
@@ -180,6 +183,7 @@ export class EmulatorDiscovery {
   }
 
   private loadDiscoveryFile(dir: string, fname: string) {
+    console.log("loadDiscovery: ", dir, fname);
     // Discovery files look lile `pid_12345.ini` and are
     // simple .ini files. The are written on emulator launch.
     const match = fname.match("pid_(\\d+).ini");

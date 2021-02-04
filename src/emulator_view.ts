@@ -34,10 +34,12 @@ class EmulatorView {
 		if (!pid.done) {
 			this.emulator = this.discovery.getEmulator(pid.value);
 			this.emulator.on(EmulatorEvent.frame, this.frameReceiver.bind(this));
+			this.emulator.resize(this.emulatorDiv.clientWidth, this.emulatorDiv.clientHeight);
 		} else {
 			this.discovery.on("add", pid => {
 				this.emulator = this.discovery.getEmulator(pid);
 				this.emulator.on(EmulatorEvent.frame, this.frameReceiver.bind(this));
+				this.emulator.resize(this.emulatorDiv.clientWidth, this.emulatorDiv.clientHeight);
 			});
 		}
 

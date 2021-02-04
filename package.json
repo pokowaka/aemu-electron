@@ -19,7 +19,7 @@
 		"compile": "tsc && copyfiles -f src/index.html build && copyfiles -f src/index.css build",
 		"start": "npm run compile && electron ./build/",
 		"pack": "electron-builder --dir",
-		"dist": "electron-builder --macos",
+		"dist": "electron-builder",
 		"doc": "typedoc --out docs src",
 		"release": "np"
 	},
@@ -85,7 +85,7 @@
 		"win": {
 			"target": "nsis",
 			"icon": "build/icon.ico"
-		  },
+		},
 		"linux": {
 			"target": [
 				"AppImage",
