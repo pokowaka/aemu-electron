@@ -1,3 +1,5 @@
+import commandLineArgs from "command-line-args";
+import commandLineUsage from "command-line-usage";
 import { app, BrowserWindow } from "electron";
 import debug from "electron-debug";
 import unhandled from "electron-unhandled";
@@ -16,28 +18,68 @@ app.setAppUserModelId("com.pokowaka@gmail.com.aemu-electron");
 // Prevent window from being garbage collected
 let mainWindow: BrowserWindow | undefined;
 
-const createMainWindow = async () => {
-	const argv: string[] = process.argv;
-	let resize = true;
-	let width = 1080;
-	let height = 1920;
-
-	if (argv.includes("-size")) {
-		const dimensions = argv[argv.indexOf("-size") + 1];
-		const extract = /(\d+)x(\d+)/.exec(dimensions);
-		width = parseInt(extract![1]);
-		height = parseInt(extract![2]);
-		resize = false;
+const optionDefinitions: commandLineUsage.OptionDefinition[] = [
+	{
+		name: "grpc",
+		type: String,
+		alias: "g",
+		description:
+			"Use a direct gRPC connection to the given address, disabling emulator discovery and auth."
+	},
+	{
+		name: "width",
+		alias: "w",
+		type: Number,
+		defaultValue: 1080,
+		description: "The initial width of the displayed emulator."
+	},
+	{
+		name: "height",
+		alias: "h",
+		type: Number,
+		defaultValue: 1920,
+		description: "Thie initial height of the displayed emulator."
+	},
+	{
+		name: "resize",
+		alias: "r",
+		type: Boolean,
+		defaultValue: true,
+		description:
+			"True if you can resize the window, or false to use fixed size."
+	},
+	{
+		name: "help",
+		type: Boolean,
+		defaultValue: false,
+		description:
+			"Displays this usage."
 	}
+];
 
+const optionUsage: commandLineUsage.Section[] = [
+	{
+		header: "A simple electron UI for the android emulator",
+		content:
+			"This app tries to connect to a running emulator, you can then interact with it."
+	},
+	{
+		header: "Options",
+		optionList: optionDefinitions
+	}
+];
+let options: commandLineArgs.CommandLineOptions;
+
+const createMainWindow = async () => {
 	const win = new BrowserWindow({
 		title: "Android Emulator View",
 		show: false,
-		width: width,
-		height: height,
-		resizable: resize,
+		width: options.width,
+		height: options.height,
+		resizable: options.resize,
 		webPreferences: {
-			nodeIntegration: true
+			nodeIntegration: true,
+			additionalArguments: [JSON.stringify(options)]
 		}
 	});
 
@@ -86,5 +128,13 @@ app.on("activate", () => {
 
 (async () => {
 	await app.whenReady();
+	const argv: string[] = process.argv;
+	options = commandLineArgs(optionDefinitions, { argv: argv });
+	if (options["help"]) {
+		const usage = commandLineUsage(optionUsage);
+		console.log(usage);
+		app.quit();
+	}
+
 	mainWindow = await createMainWindow();
 })();
