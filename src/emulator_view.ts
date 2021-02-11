@@ -1,3 +1,4 @@
+import commandLineArgs from "command-line-args";
 import * as fs from "fs";
 import { fileURLToPath } from "url";
 import { EmulatorDiscovery } from "./discovery";
@@ -22,28 +23,41 @@ class EmulatorView {
 	discovery: EmulatorDiscovery;
 	emulatorDiv: HTMLDivElement;
 
-	constructor() {
+	constructor(emulator: Emulator | null) {
 		this.canvas = <HTMLCanvasElement>document.getElementById("canvas")!;
 		this.emulatorDiv = <HTMLDivElement>document.getElementById("emulator");
 		this.ctx = this.canvas.getContext("2d")!;
 		this.imagedata = this.ctx.createImageData(1, 1);
 		this.button = 0;
 		this.discovery = new EmulatorDiscovery();
+
+		if (!!emulator) {
+			this.registerEmulator(emulator);
+		} else {
+			this.discoverEmulators();
+		}
+		this.addListeners();
+	}
+
+	private registerEmulator(emulator: Emulator) {
+		this.emulator = emulator;
+		this.emulator.on(EmulatorEvent.frame, this.frameReceiver.bind(this));
+		this.emulator.resize(
+			this.emulatorDiv.clientWidth,
+			this.emulatorDiv.clientHeight
+		);
+	}
+
+	private discoverEmulators() {
 		const pid = this.discovery.pids().next();
 
 		if (!pid.done) {
-			this.emulator = this.discovery.getEmulator(pid.value);
-			this.emulator.on(EmulatorEvent.frame, this.frameReceiver.bind(this));
-			this.emulator.resize(this.emulatorDiv.clientWidth, this.emulatorDiv.clientHeight);
+			this.registerEmulator(this.discovery.getEmulator(pid.value));
 		} else {
 			this.discovery.on("add", pid => {
-				this.emulator = this.discovery.getEmulator(pid);
-				this.emulator.on(EmulatorEvent.frame, this.frameReceiver.bind(this));
-				this.emulator.resize(this.emulatorDiv.clientWidth, this.emulatorDiv.clientHeight);
+				this.registerEmulator(this.discovery.getEmulator(pid));
 			});
 		}
-
-		this.addListeners();
 	}
 
 	/** Registers mouse, keyboard & resize listeners. */
@@ -88,7 +102,10 @@ class EmulatorView {
 		});
 
 		window.addEventListener("resize", () => {
-			this.emulator?.resize(this.emulatorDiv.clientWidth, this.emulatorDiv.clientHeight);
+			this.emulator?.resize(
+				this.emulatorDiv.clientWidth,
+				this.emulatorDiv.clientHeight
+			);
 		});
 	}
 
@@ -118,4 +135,20 @@ class EmulatorView {
 		this.ctx.putImageData(this.imagedata, 0, 0);
 	}
 }
-new EmulatorView();
+
+// Main entry:
+
+const main = (options: commandLineArgs.CommandLineOptions) => {
+	console.log(options);
+	let emulator: Emulator | null = null;
+
+	if (options["grpc"]) {
+		const grpc = options["grpc"]!;
+		console.log("Using direct connection to `grpc`");
+		emulator = new EmulatorDiscovery().getEmulatorToHost(grpc);
+	}
+
+	new EmulatorView(emulator);
+};
+
+main(JSON.parse(window.process.argv[window.process.argv.length - 1]));

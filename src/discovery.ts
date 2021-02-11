@@ -87,6 +87,17 @@ export class EmulatorDiscovery {
     });
   }
 
+	getEmulatorToHost(host: string) {
+    return new Emulator({
+      pid: 0,
+      client: new emu.EmulatorControllerClient(
+        host,
+        grpc.credentials.createInsecure()
+      ),
+      metadata: new grpc.Metadata(),
+    });
+	}
+
   /** You can register "add" and "delete" events.
    *
    * @param type The event type, can be "add" or "delete"
