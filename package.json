@@ -1,7 +1,7 @@
 {
 	"name": "aemu-electron",
 	"productName": "aemu electron",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "A prototype of the android emulator UI in electron",
 	"homepage": "github.com/pokowaka/aemu-electron",
 	"license": "MIT",

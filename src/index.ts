@@ -77,6 +77,7 @@ const createMainWindow = async () => {
 		width: options.width,
 		height: options.height,
 		resizable: options.resize,
+		useContentSize: true,
 		webPreferences: {
 			nodeIntegration: true,
 			additionalArguments: [JSON.stringify(options)]
