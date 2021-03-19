@@ -16,7 +16,7 @@
 			},
 			"sourceMaps": true,
 			"outFiles": ["${workspaceFolder}/build/**/*.js"],
-			"args": ["-size", "1080x1920"]
+			"args": []
 		},
 		{
 			"name": "Electron: Renderer",

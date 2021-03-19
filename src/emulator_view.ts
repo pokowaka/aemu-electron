@@ -1,5 +1,20 @@
+// Copyright (C) 2021 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import commandLineArgs from "command-line-args";
+import { log } from "electron-log";
 import * as fs from "fs";
+import * as microtime from "microtime";
 import { fileURLToPath } from "url";
 import { EmulatorDiscovery } from "./discovery";
 import { Emulator, EmulatorEvent, EmulatorKeyEvent } from "./emulator";
@@ -54,7 +69,7 @@ class EmulatorView {
 		if (!pid.done) {
 			this.registerEmulator(this.discovery.getEmulator(pid.value));
 		} else {
-			this.discovery.on("add", pid => {
+			this.discovery.on("add", (pid) => {
 				this.registerEmulator(this.discovery.getEmulator(pid));
 			});
 		}
@@ -62,42 +77,42 @@ class EmulatorView {
 
 	/** Registers mouse, keyboard & resize listeners. */
 	private addListeners() {
-		this.canvas.addEventListener("mousedown", e => {
+		this.canvas.addEventListener("mousedown", (e) => {
 			const rect = this.canvas.getBoundingClientRect();
 			this.button = e.button === 0 ? 1 : e.button === 2 ? 2 : 0;
 			this.emulator?.sendMouse({
 				x: e.clientX - rect.left,
 				y: e.clientY - rect.top,
-				button: this.button
+				button: this.button,
 			});
 		});
 
-		this.canvas.addEventListener("mousemove", e => {
+		this.canvas.addEventListener("mousemove", (e) => {
 			if (this.button !== 0) {
 				const rect = this.canvas.getBoundingClientRect();
 				this.emulator?.sendMouse({
 					x: e.clientX - rect.left,
 					y: e.clientY - rect.top,
-					button: this.button
+					button: this.button,
 				});
 			}
 		});
 
-		document.addEventListener("mouseup", e => {
+		document.addEventListener("mouseup", (e) => {
 			this.button = 0;
 			const rect = this.canvas.getBoundingClientRect();
 			this.emulator?.sendMouse({
 				x: e.clientX - rect.left,
 				y: e.clientY - rect.top,
-				button: this.button
+				button: this.button,
 			});
 		});
 
-		document.addEventListener("keydown", e => {
+		document.addEventListener("keydown", (e) => {
 			this.emulator?.sendKey(EmulatorKeyEvent.keydown, e.key);
 		});
 
-		document.addEventListener("keyup", e => {
+		document.addEventListener("keyup", (e) => {
 			this.emulator?.sendKey(EmulatorKeyEvent.keyup, e.key);
 		});
 
@@ -111,6 +126,7 @@ class EmulatorView {
 
 	private frameReceiver(img: Image) {
 		// TODO(pokowaka): Replace this with some native magic for extra speed.
+		const receivedUs = microtime.now();
 		const format = img.getFormat()!;
 		const w = format.getWidth();
 		const h = format.getHeight();
@@ -133,12 +149,18 @@ class EmulatorView {
 			this.imagedata.data[j++] = 0xff;
 		}
 		this.ctx.putImageData(this.imagedata, 0, 0);
+		const renderedUs = microtime.now();
+		console.log(
+			`Seq: ${img.getSeq()}, send: ${img.getTimestampus()}, received: ${receivedUs}, rendered: ${renderedUs}`
+		);
 	}
 }
 
 // Main entry:
 
 const main = (options: commandLineArgs.CommandLineOptions) => {
+	// Redirect logging to the main process.
+	console.log = log;
 	console.log(options);
 	let emulator: Emulator | null = null;
 

@@ -1,3 +1,16 @@
+// Copyright (C) 2021 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import commandLineArgs from "command-line-args";
 import commandLineUsage from "command-line-usage";
 import { app, BrowserWindow } from "electron";
@@ -5,6 +18,7 @@ import debug from "electron-debug";
 import unhandled from "electron-unhandled";
 import is from "electron-util";
 import * as path from "path";
+
 
 app.on("ready", () => {
 	console.log("App is ready");
@@ -130,7 +144,7 @@ app.on("activate", () => {
 (async () => {
 	await app.whenReady();
 	const argv: string[] = process.argv;
-	options = commandLineArgs(optionDefinitions, { argv: argv });
+	options = commandLineArgs(optionDefinitions, { argv: argv, partial: true });
 	if (options["help"]) {
 		const usage = commandLineUsage(optionUsage);
 		console.log(usage);
